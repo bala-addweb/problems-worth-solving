@@ -1,0 +1,536 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Problems Worth Solving</title>
+  <meta name="description" content="Anonymous form to share everyday work problems that don't have a proper solution yet, and ideas to solve them.">
+  <style>
+    :root {
+      --bg: #f6f7fb;
+      --card: #ffffff;
+      --text: #1d2130;
+      --muted: #5d6478;
+      --border: #dfe2ec;
+      --accent: #3157d5;
+      --accent-text: #ffffff;
+      --accent-soft: #e8edfc;
+      --danger: #c0392b;
+      --success: #1e8e5a;
+      --radius: 12px;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #12141b;
+        --card: #1b1e28;
+        --text: #e9ebf2;
+        --muted: #a2a8ba;
+        --border: #2f3342;
+        --accent: #7c9bff;
+        --accent-text: #0d1020;
+        --accent-soft: #252c47;
+        --danger: #ff7b6b;
+        --success: #4cc98a;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    }
+    .wrap { max-width: 720px; margin: 0 auto; padding: 32px 16px 64px; }
+    header h1 { font-size: 1.75rem; line-height: 1.25; margin: 0 0 6px; }
+    header p { margin: 0; color: var(--muted); }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-top: 24px;
+    }
+    .badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: var(--accent-soft); color: var(--accent);
+      font-size: .85rem; font-weight: 600;
+      padding: 4px 10px; border-radius: 999px; margin-bottom: 12px;
+    }
+    h2 { font-size: 1.25rem; margin: 0 0 4px; }
+    h3 { font-size: 1rem; margin: 20px 0 8px; }
+    .step-intro { color: var(--muted); margin: 0 0 20px; }
+    .field { margin-bottom: 22px; }
+    .field > label, fieldset > legend {
+      display: block; font-weight: 600; margin-bottom: 8px; padding: 0;
+    }
+    .req { color: var(--danger); }
+    .hint { display: block; font-weight: 400; color: var(--muted); font-size: .9rem; margin-top: 2px; }
+    fieldset { border: 0; margin: 0 0 22px; padding: 0; min-width: 0; }
+    input[type=text], input[type=url], select, textarea {
+      width: 100%; font: inherit; color: var(--text);
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 8px; padding: 10px 12px;
+    }
+    textarea { min-height: 96px; resize: vertical; }
+    .invalid { border-color: var(--danger) !important; }
+    fieldset.invalid > legend { color: var(--danger); }
+    fieldset.invalid .opt, fieldset.invalid .chip span { border-color: var(--danger); }
+    .brand {
+      background: #0b1d30; border-radius: var(--radius);
+      padding: 14px 18px; margin-bottom: 24px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .brand img { display: block; height: 40px; width: auto; max-width: 100%; }
+    input:focus, select:focus, textarea:focus, button:focus-visible, .chip input:focus-visible + span {
+      outline: 2px solid var(--accent); outline-offset: 2px;
+    }
+    .options { display: grid; gap: 8px; }
+    .options.cols { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
+    .opt {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px;
+      cursor: pointer; background: var(--bg);
+    }
+    .opt:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); }
+    .opt input { margin-top: 4px; accent-color: var(--accent); }
+    .rating { display: flex; gap: 8px; flex-wrap: wrap; }
+    .chip { position: relative; }
+    .chip input { position: absolute; opacity: 0; inset: 0; cursor: pointer; }
+    .chip span {
+      display: grid; place-items: center; width: 52px; height: 52px;
+      border: 1px solid var(--border); border-radius: 10px;
+      font-weight: 700; background: var(--bg);
+    }
+    .chip input:checked + span { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
+    .rating-labels { display: flex; justify-content: space-between; max-width: 292px; color: var(--muted); font-size: .85rem; margin-top: 6px; }
+    .examples { display: grid; gap: 8px; margin: 12px 0 4px; padding: 0; list-style: none; }
+    .examples li {
+      background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
+      padding: 10px 12px; font-size: .95rem;
+    }
+    .examples strong { display: block; }
+    .progress { height: 8px; background: var(--border); border-radius: 999px; overflow: hidden; margin-top: 20px; }
+    .progress > div { height: 100%; width: 0; background: var(--accent); transition: width .3s ease; }
+    .progress-text { color: var(--muted); font-size: .9rem; margin-top: 6px; }
+    .nav { display: flex; justify-content: space-between; gap: 12px; margin-top: 8px; }
+    button {
+      font: inherit; font-weight: 600; cursor: pointer;
+      padding: 11px 22px; border-radius: 8px; border: 1px solid var(--border);
+      background: var(--card); color: var(--text);
+    }
+    button.primary { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
+    button:disabled { opacity: .5; cursor: not-allowed; }
+    .notice {
+      border-left: 4px solid var(--accent); background: var(--accent-soft);
+      padding: 12px 14px; border-radius: 8px; margin: 16px 0 0;
+    }
+    .error { color: var(--danger); font-weight: 600; margin: 0 0 12px; }
+    .success h2 { color: var(--success); }
+    .hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+    [hidden] { display: none !important; }
+    ul.points { padding-left: 20px; margin: 12px 0; }
+    ul.points li { margin-bottom: 4px; }
+    @media (max-width: 480px) {
+      .card { padding: 18px; }
+      header h1 { font-size: 1.45rem; }
+      .nav button { flex: 1; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="brand"><img src="addweb-logo.svg" alt="AddWeb" width="280" height="56"></div>
+      <h1>Problems Worth Solving</h1>
+      <p>Tell us about everyday work problems that still don't have a proper solution, and share your ideas for fixing them. Let's make work easier for everyone.</p>
+      <span class="badge" style="margin-top:12px">🔒 100% anonymous: we don't collect your name, email, or login</span>
+    </header>
+
+    <!-- Form -->
+    <form id="ideaForm" class="card" novalidate>
+      <!-- Honeypot field to catch spam bots; real people never see it -->
+      <div class="hp" aria-hidden="true">
+        <label for="website">Leave this empty</label>
+        <input type="text" id="website" name="website" tabindex="-1" autocomplete="off">
+      </div>
+
+      <!-- Step 1 -->
+      <section class="step" data-title="About you">
+        <h2>About you</h2>
+        <p class="step-intro">This only helps us group similar problems. Choose "Prefer not to say" if you'd rather not share.</p>
+
+        <div class="field">
+          <label for="department">Department / team <span class="req">*</span></label>
+          <select id="department" name="department">
+            <option value="">Select…</option>
+            <option>Development / Engineering</option>
+            <option>Design / UI-UX</option>
+            <option>QA / Testing</option>
+            <option>Sales</option>
+            <option>Marketing</option>
+            <option>Customer Support</option>
+            <option>HR</option>
+            <option>Finance / Accounts</option>
+            <option>Operations / Admin</option>
+            <option>Management</option>
+            <option>Other</option>
+            <option>Prefer not to say</option>
+          </select>
+        </div>
+
+        <fieldset>
+          <legend>Experience level <span class="req">*</span></legend>
+          <div class="options cols">
+            <label class="opt"><input type="radio" name="role_level" value="Junior"> Junior</label>
+            <label class="opt"><input type="radio" name="role_level" value="Mid-level"> Mid-level</label>
+            <label class="opt"><input type="radio" name="role_level" value="Senior"> Senior</label>
+            <label class="opt"><input type="radio" name="role_level" value="Lead / Manager"> Lead / Manager</label>
+            <label class="opt"><input type="radio" name="role_level" value="Prefer not to say"> Prefer not to say</label>
+          </div>
+        </fieldset>
+      </section>
+
+      <!-- Step 2 -->
+      <section class="step" data-title="The problem" hidden>
+        <h2>The problem</h2>
+        <p class="step-intro">Describe one problem that people commonly face at work.</p>
+
+        <div class="field">
+          <label for="problem_title">Give the problem a short title <span class="req">*</span></label>
+          <input type="text" id="problem_title" name="problem_title">
+        </div>
+
+        <div class="field">
+          <label for="problem_area">Which area does it belong to? <span class="req">*</span></label>
+          <select id="problem_area" name="problem_area">
+            <option value="">Select…</option>
+            <option>HR &amp; onboarding</option>
+            <option>Leave, attendance &amp; timesheets</option>
+            <option>Recruitment &amp; hiring</option>
+            <option>Finance, expenses &amp; invoicing</option>
+            <option>Project &amp; task management</option>
+            <option>Client communication &amp; reporting</option>
+            <option>Customer support</option>
+            <option>Sales &amp; follow-ups</option>
+            <option>Internal communication &amp; meetings</option>
+            <option>Documentation &amp; knowledge sharing</option>
+            <option>IT, access &amp; asset management</option>
+            <option>Approvals &amp; sign-offs</option>
+            <option>Vendor &amp; purchase management</option>
+            <option>Training &amp; skill development</option>
+            <option>Performance reviews &amp; feedback</option>
+            <option>Exit &amp; offboarding process</option>
+            <option>Shift &amp; resource planning</option>
+            <option>Data entry &amp; duplicate work</option>
+            <option>Compliance &amp; document tracking</option>
+            <option>Other</option>
+          </select>
+        </div>
+
+        <div class="field" id="areaOtherWrap" hidden>
+          <label for="problem_area_other">Which area? <span class="req">*</span></label>
+          <input type="text" id="problem_area_other" name="problem_area_other">
+        </div>
+
+        <div class="field">
+          <label for="problem_description">Describe the problem <span class="req">*</span> <span class="hint">What happens today, and why is it difficult or frustrating?</span></label>
+          <textarea id="problem_description" name="problem_description"></textarea>
+        </div>
+
+        <fieldset>
+          <legend>Who faces this problem? <span class="req">*</span> <span class="hint">Select all that apply</span></legend>
+          <div class="options cols">
+            <label class="opt"><input type="checkbox" name="who_faces" value="Me"> Me</label>
+            <label class="opt"><input type="checkbox" name="who_faces" value="My team"> My team</label>
+            <label class="opt"><input type="checkbox" name="who_faces" value="Other teams"> Other teams</label>
+            <label class="opt"><input type="checkbox" name="who_faces" value="New employees"> New employees</label>
+            <label class="opt"><input type="checkbox" name="who_faces" value="Clients / customers"> Clients / customers</label>
+            <label class="opt"><input type="checkbox" name="who_faces" value="Most companies"> Most companies</label>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>How often does it happen? <span class="req">*</span></legend>
+          <div class="options cols">
+            <label class="opt"><input type="radio" name="frequency" value="Daily"> Daily</label>
+            <label class="opt"><input type="radio" name="frequency" value="Weekly"> Weekly</label>
+            <label class="opt"><input type="radio" name="frequency" value="Monthly"> Monthly</label>
+            <label class="opt"><input type="radio" name="frequency" value="Occasionally"> Occasionally</label>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>How painful is this problem? <span class="req">*</span></legend>
+          <div class="rating">
+            <label class="chip"><input type="radio" name="pain_rating" value="1" aria-label="1, minor"><span>1</span></label>
+            <label class="chip"><input type="radio" name="pain_rating" value="2" aria-label="2"><span>2</span></label>
+            <label class="chip"><input type="radio" name="pain_rating" value="3" aria-label="3"><span>3</span></label>
+            <label class="chip"><input type="radio" name="pain_rating" value="4" aria-label="4"><span>4</span></label>
+            <label class="chip"><input type="radio" name="pain_rating" value="5" aria-label="5, very painful"><span>5</span></label>
+          </div>
+          <div class="rating-labels"><span>Minor</span><span>Very painful</span></div>
+        </fieldset>
+      </section>
+
+      <!-- Step 3 -->
+      <section class="step" data-title="Current situation" hidden>
+        <h2>How it's handled today</h2>
+        <p class="step-intro">Help us understand why there isn't a proper solution yet.</p>
+
+        <div class="field">
+          <label for="current_handling">How is it handled right now? <span class="req">*</span></label>
+          <textarea id="current_handling" name="current_handling"></textarea>
+        </div>
+
+        <fieldset>
+          <legend>Is there a proper solution for this today? <span class="req">*</span></legend>
+          <div class="options">
+            <label class="opt"><input type="radio" name="solution_status" value="No solution exists that I know of"> No solution exists that I know of</label>
+            <label class="opt"><input type="radio" name="solution_status" value="Tools exist but don't fit our needs"> Tools exist, but they don't fit our needs</label>
+            <label class="opt"><input type="radio" name="solution_status" value="Tools exist but are too complex"> Tools exist, but they're too complex to use</label>
+            <label class="opt"><input type="radio" name="solution_status" value="Not sure"> Not sure</label>
+          </div>
+        </fieldset>
+
+        <div class="field">
+          <label for="why_not_working">What's missing in the current way or tools? <span class="req">*</span> <span class="hint">Name any tools you've tried, if you remember</span></label>
+          <textarea id="why_not_working" name="why_not_working"></textarea>
+        </div>
+      </section>
+
+      <!-- Step 4 -->
+      <section class="step" data-title="Your solution idea" hidden>
+        <h2>Your idea to solve it</h2>
+        <p class="step-intro">No idea is too small. A rough thought is enough.</p>
+
+        <fieldset>
+          <legend>Do you have an idea to solve this problem? <span class="req">*</span></legend>
+          <div class="options cols">
+            <label class="opt"><input type="radio" name="has_idea" value="Yes"> Yes</label>
+            <label class="opt"><input type="radio" name="has_idea" value="No"> Not yet</label>
+          </div>
+        </fieldset>
+
+        <div id="ideaDetails" hidden>
+          <div class="field">
+            <label for="idea_name">Give your solution a name <span class="req">*</span></label>
+            <input type="text" id="idea_name" name="idea_name">
+          </div>
+
+          <div class="field">
+            <label for="idea_description">How would it work? <span class="req">*</span></label>
+            <textarea id="idea_description" name="idea_description"></textarea>
+          </div>
+
+          <fieldset>
+            <legend>What kind of solution is it? <span class="req">*</span></legend>
+            <div class="options cols">
+              <label class="opt"><input type="radio" name="idea_type" value="New tool / app"> New tool / app</label>
+              <label class="opt"><input type="radio" name="idea_type" value="Automation"> Automation</label>
+              <label class="opt"><input type="radio" name="idea_type" value="Integration between tools"> Integration between tools</label>
+              <label class="opt"><input type="radio" name="idea_type" value="Template / checklist"> Template / checklist</label>
+              <label class="opt"><input type="radio" name="idea_type" value="Process change"> Process change</label>
+              <label class="opt"><input type="radio" name="idea_type" value="Not sure"> Not sure</label>
+            </div>
+          </fieldset>
+
+          <div class="field">
+            <label for="key_features">Must-have features <span class="req">*</span> <span class="hint">List the 2–5 things it must do</span></label>
+            <textarea id="key_features" name="key_features"></textarea>
+          </div>
+
+          <div class="field">
+            <label for="reference_link">References <span class="req">*</span> <span class="hint">Any references can be added here</span></label>
+            <textarea id="reference_link" name="reference_link"></textarea>
+          </div>
+        </div>
+      </section>
+
+      <!-- Step 5 -->
+      <section class="step" data-title="Final thoughts" hidden>
+        <h2>Final thoughts</h2>
+        <p class="step-intro">Almost done.</p>
+
+        <div class="field">
+          <label for="anything_else">Anything else you'd like to add? <span class="hint">Optional</span></label>
+          <textarea id="anything_else" name="anything_else"></textarea>
+        </div>
+
+        <div class="field">
+          <label for="contact">Happy to discuss this further? <span class="hint">Optional. Leave your name or email, or leave it blank to stay anonymous.</span></label>
+          <input type="text" id="contact" name="contact" autocomplete="off">
+        </div>
+
+        <p class="notice">🔒 If you leave the field above empty, there is no way to know who sent this response.</p>
+      </section>
+
+      <p class="error" id="formError" role="alert" hidden></p>
+
+      <div class="nav">
+        <button type="button" id="backBtn">← Back</button>
+        <button type="button" class="primary" id="nextBtn">Next →</button>
+      </div>
+
+      <div class="progress" aria-hidden="true"><div id="progressBar"></div></div>
+      <div class="progress-text" id="progressText" aria-live="polite"></div>
+    </form>
+
+    <!-- Thank you -->
+    <section class="card success" id="thanks" hidden tabindex="-1">
+      <h2>✅ Thank you!</h2>
+      <p>Your response has been recorded. We'll review everything we receive and share the most common problems, and what we plan to do about them, with everyone.</p>
+      <div class="nav" style="justify-content:flex-start">
+        <button type="button" id="againBtn">Share another problem</button>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    // ====== CONFIG ======
+    // Paste the URL that receives responses here: either a Zoho Flow webhook URL
+    // (saves to Zoho Sheet) or a Google Apps Script Web App URL (see apps-script/Code.gs).
+    const SCRIPT_URL = "https://flow.zoho.in/60097509567/flow/webhook/incoming?zapikey=1001.7bb81cd905b28fc68e3f03dea1126cbf.c676015996a460125c05018178dea1df&isdebug=false";
+    // ====================
+
+    const form = document.getElementById("ideaForm");
+    const thanks = document.getElementById("thanks");
+    const steps = Array.from(form.querySelectorAll(".step"));
+    const backBtn = document.getElementById("backBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    const bar = document.getElementById("progressBar");
+    const progressText = document.getElementById("progressText");
+    const errorBox = document.getElementById("formError");
+    let current = 0;
+
+    function showStep(i, scroll = true) {
+      current = i;
+      steps.forEach((s, idx) => (s.hidden = idx !== i));
+      backBtn.disabled = i === 0;
+      nextBtn.textContent = i === steps.length - 1 ? "Submit" : "Next →";
+      bar.style.width = ((i + 1) / steps.length) * 100 + "%";
+      progressText.textContent = `Step ${i + 1} of ${steps.length}: ${steps[i].dataset.title}`;
+      hideError();
+      if (scroll) form.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    function showError(msg) { errorBox.textContent = msg; errorBox.hidden = false; }
+    function hideError() { errorBox.hidden = true; }
+
+    // Every visible question is required, except these
+    const OPTIONAL = new Set(["contact", "anything_else", "website"]);
+
+    function markTarget(el) { return el.closest("fieldset") || el; }
+
+    // Checks the required fields on the current step
+    function validateStep(i) {
+      const step = steps[i];
+      step.querySelectorAll(".invalid").forEach((el) => el.classList.remove("invalid"));
+
+      const controls = Array.from(step.querySelectorAll("input[name], select[name], textarea[name]"))
+        .filter((el) => !OPTIONAL.has(el.name) && !el.closest("[hidden]"));
+      const names = [...new Set(controls.map((el) => el.name))];
+
+      const missing = names.filter((name) => {
+        const group = controls.filter((el) => el.name === name);
+        if (group[0].type === "radio" || group[0].type === "checkbox") return !group.some((el) => el.checked);
+        return group[0].value.trim() === "";
+      });
+
+      if (missing.length) {
+        const firsts = missing.map((name) => controls.find((el) => el.name === name));
+        firsts.forEach((el) => markTarget(el).classList.add("invalid"));
+        firsts[0].focus();
+        markTarget(firsts[0]).scrollIntoView({ behavior: "smooth", block: "center" });
+        showError("Please answer all questions marked *.");
+        return false;
+      }
+      return true;
+    }
+
+    showStep(0, false);
+
+    backBtn.addEventListener("click", () => { if (current > 0) showStep(current - 1); });
+
+    nextBtn.addEventListener("click", () => {
+      if (!validateStep(current)) return;
+      if (current < steps.length - 1) showStep(current + 1);
+      else submitForm();
+    });
+
+    ["input", "change"].forEach((type) =>
+      form.addEventListener(type, (e) => markTarget(e.target).classList.remove("invalid"))
+    );
+
+    // Conditional fields
+    form.addEventListener("change", (e) => {
+      if (e.target.name === "has_idea") {
+        document.getElementById("ideaDetails").hidden = e.target.value !== "Yes";
+      }
+      if (e.target.id === "problem_area") {
+        document.getElementById("areaOtherWrap").hidden = e.target.value !== "Other";
+      }
+    });
+
+    function collectData() {
+      const fd = new FormData(form);
+      const data = {};
+      for (const key of new Set(fd.keys())) {
+        data[key] = fd.getAll(key).map((v) => String(v).trim()).filter(Boolean).join(", ");
+      }
+      // Drop answers from hidden conditional sections
+      if (data.has_idea !== "Yes") {
+        ["idea_name", "idea_description", "idea_type", "key_features", "reference_link"]
+          .forEach((k) => delete data[k]);
+      }
+      if (data.problem_area !== "Other") delete data.problem_area_other;
+      return data;
+    }
+
+    async function submitForm() {
+      const data = collectData();
+
+      if (data.website) return; // honeypot: a bot filled the hidden field
+      delete data.website;
+      data.submitted_at = new Date().toLocaleString("en-GB");
+
+      if (!SCRIPT_URL || SCRIPT_URL.startsWith("PASTE_")) {
+        showError("This form isn't connected yet. The admin needs to add the Apps Script URL in index.html.");
+        return;
+      }
+
+      nextBtn.disabled = true;
+      backBtn.disabled = true;
+      nextBtn.textContent = "Submitting…";
+
+      try {
+        // "no-cors" is needed for Google Apps Script. The response can't be read,
+        // so a request that doesn't throw is treated as a success.
+        await fetch(SCRIPT_URL, {
+          method: "POST",
+          mode: "no-cors",
+          body: new URLSearchParams(data),
+        });
+        form.hidden = true;
+        thanks.hidden = false;
+        thanks.focus();
+        thanks.scrollIntoView({ behavior: "smooth", block: "start" });
+      } catch (err) {
+        showError("Couldn't submit. Please check your internet connection and try again.");
+        nextBtn.textContent = "Submit";
+        backBtn.disabled = false;
+      } finally {
+        nextBtn.disabled = false;
+      }
+    }
+
+    document.getElementById("againBtn").addEventListener("click", () => {
+      form.reset();
+      document.getElementById("ideaDetails").hidden = true;
+      document.getElementById("areaOtherWrap").hidden = true;
+      thanks.hidden = true;
+      form.hidden = false;
+      showStep(1); // skip "About you" since it's the same person
+    });
+  </script>
+</body>
+</html>
