@@ -215,6 +215,11 @@
           </div>
         </fieldset>
 
+        <div class="field" id="toolsWrap" hidden>
+          <label for="why_not_working">Which tools, and what's missing in them? <span class="hint">Optional</span></label>
+          <textarea id="why_not_working" name="why_not_working"></textarea>
+        </div>
+
         <fieldset>
           <legend>How often does it happen? <span class="req">*</span></legend>
           <div class="options cols">
@@ -240,16 +245,26 @@
 
       <!-- Your idea -->
       <div class="group">
-        <h2 class="group-title">Your idea <span class="hint">Optional</span></h2>
+        <h2 class="group-title">Your idea</h2>
 
-        <div class="field">
-          <label for="idea_description">How could we solve it? <span class="hint">A rough thought is enough, such as a tool, an automation, or a simple checklist.</span></label>
-          <textarea id="idea_description" name="idea_description"></textarea>
-        </div>
+        <fieldset>
+          <legend>Do you have any idea to solve it? <span class="req">*</span></legend>
+          <div class="options cols">
+            <label class="opt"><input type="radio" name="has_idea" value="Yes"> Yes</label>
+            <label class="opt"><input type="radio" name="has_idea" value="No"> No</label>
+          </div>
+        </fieldset>
 
-        <div class="field">
-          <label for="reference_link">References <span class="hint">Any references can be added here</span></label>
-          <input type="text" id="reference_link" name="reference_link">
+        <div id="ideaWrap" hidden>
+          <div class="field">
+            <label for="idea_description">How could we solve it? <span class="req">*</span> <span class="hint">A rough thought is enough, such as a tool, an automation, or a simple checklist.</span></label>
+            <textarea id="idea_description" name="idea_description"></textarea>
+          </div>
+
+          <div class="field">
+            <label for="reference_link">References <span class="hint">Optional. Any references can be added here</span></label>
+            <input type="text" id="reference_link" name="reference_link">
+          </div>
         </div>
 
         <div class="field">
@@ -287,7 +302,20 @@
     const errorBox = document.getElementById("formError");
 
     // Every question is required, except these
-    const OPTIONAL = new Set(["idea_description", "reference_link", "contact", "website"]);
+    const OPTIONAL = new Set(["why_not_working", "reference_link", "contact", "website"]);
+
+    // Show the idea fields only when the person has an idea
+    const ideaWrap = document.getElementById("ideaWrap");
+    form.addEventListener("change", (e) => {
+      if (e.target.name === "has_idea") ideaWrap.hidden = e.target.value !== "Yes";
+    });
+
+    // Show the tools box only when the person says tools exist
+    const toolsWrap = document.getElementById("toolsWrap");
+    const toolsExist = (v) => String(v || "").startsWith("Tools exist");
+    form.addEventListener("change", (e) => {
+      if (e.target.name === "solution_status") toolsWrap.hidden = !toolsExist(e.target.value);
+    });
 
     function showError(msg) { errorBox.textContent = msg; errorBox.hidden = false; }
     function hideError() { errorBox.hidden = true; }
@@ -297,7 +325,7 @@
       form.querySelectorAll(".invalid").forEach((el) => el.classList.remove("invalid"));
 
       const controls = Array.from(form.querySelectorAll("input[name], select[name], textarea[name]"))
-        .filter((el) => !OPTIONAL.has(el.name));
+        .filter((el) => !OPTIONAL.has(el.name) && !el.closest("[hidden]"));
       const names = [...new Set(controls.map((el) => el.name))];
 
       const missing = names.filter((name) => {
@@ -328,8 +356,13 @@
       for (const key of new Set(fd.keys())) {
         data[key] = fd.getAll(key).map((v) => String(v).trim()).filter(Boolean).join(", ");
       }
-      // Keeps the "Has Solution Idea?" column and the Summary sheet working
-      data.has_idea = data.idea_description ? "Yes" : "No";
+      // Ignore the tools box if it's hidden
+      if (!toolsExist(data.solution_status)) delete data.why_not_working;
+      // Ignore the idea fields if the person has no idea
+      if (data.has_idea !== "Yes") {
+        delete data.idea_description;
+        delete data.reference_link;
+      }
       return data;
     }
 
@@ -369,6 +402,8 @@
       const dept = form.department.value; // same person, keep their department
       form.reset();
       form.department.value = dept;
+      toolsWrap.hidden = true;
+      ideaWrap.hidden = true;
       thanks.hidden = true;
       form.hidden = false;
       form.scrollIntoView({ behavior: "smooth", block: "start" });
